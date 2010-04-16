@@ -1,0 +1,11 @@
+moodle_markup README
+
+I create webpages in Moodle as part of my job.  Aspects of doing this are
+extremely annoying.  This project allows me to turn plain text files (with
+certain layout and formatting rules observed) into HTML that I can copy into
+Moodle (or insert directly into the database).
+
+It's geared specifically at the types of pages I create, and is unlikely to
+interest anyone else directly.
+
+gsinclair at gmail dot com
