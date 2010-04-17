@@ -1,0 +1,49 @@
+[Topic 16]
+
+[Description]
+
+Coordinate geometry is a large topic. The programme is divided into three parts:
+ * 16a: distance, midpoint, gradient diagrams; number plane graphs
+ * 16b: distance, midpoint, gradient formulas; y = mx + b
+ * 16c: further equations of a line; regions
+
+Note: there is a lot of detail in the "y = mx + b" area: sketching; finding
+equations; parallel and perpendicular lines; general form; and more.
+
+{highlight:Only 16a and 16b were assessed in Task 2 on 17 March 2010.}
+
+
+[Resources]
+
+<Coordinate geometry skills worksheet> 5.23 F (pdf) file:^A030.+worksheet.pdf
+  A summary of (nearly?) all the skills taught in this topic.
+  {-file:Solutions|PDF|A030*SOLUTIONS.pdf}
+
+<y = mx + b interactive> 5.23 U (ggb) file:interactive.ggb
+  Manipulate the values of _m_ and _b_ in this GeoGebra file, and see the effect
+  they have on the graph.
+
+<Further equations of straight lines> 5.3 F,PS (pdf) file:^Further
+  Textbook exercise with more challenging questions on finding the equations of
+  straight lines.
+
+<Graphing straight line families> 5.23 U (gsp) file:^Graphing
+  A GSP file encouraging you to think about the relationship between a linear
+  equation and the corresponding graph. Essentially a teaching resource, but
+  useful for independent study. {warn:Only works if you have Geometers Sketchpad
+  installed.}
+
+<Gradient product of perpendicular lines> 5.23 U (gsp) file:^Gradient
+  Explore the relationship between the gradients of two lines when they become
+  perpendicular. {warn:Only works if you have Geometers Sketchpad installed.}
+
+
+[Websites]
+
+<Linear graph animation> 5.23 F
+  Take the challenge to determine an equation from its graph, and vice versa.
+
+
+[Note]
+
+{red:U} = Understanding; {red:F} = Fluency; {red:PS} = Problem Solving
