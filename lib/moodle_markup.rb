@@ -237,7 +237,7 @@ class Resource
     #     {-file:Solutions|PDF|A030*SOLUTIONS.pdf}
     lines = paragraph.split(NL)
     @topic_number = topic_number
-    @title, @level, @category, @filetype , @file_re = _extract_details(lines)
+    @title, @level, @category, @filetype , @file_re = extract_details(lines)
     @description  = extract_description(lines)
   end
   attr_reader :topic_number, :title, :level, :category
