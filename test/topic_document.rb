@@ -9,9 +9,9 @@ D "Heading" do
   D "from_section (valid and invalid)" do
     s = Section.new("Topic 2", [])
       Eq Heading.from_section(s).html, "<h2>Topic 2: Index laws</h2>"
-    s = Section.new("Topic 2", ["Lorem ipsum"])
+    s = Section.new("Topic 2", ["Paragraph must be empty if it's a Heading"])
       E { Heading.from_section(s) }
-    s = Section.new("Description", ["Lorem ipsum"])
+    s = Section.new("Invalid heading string", ["Lorem ipsum"])
       E { Heading.from_section(s) }
   end
 end
@@ -41,22 +41,6 @@ D "TopicDocument (surface)" do
     T { Note === s }
     T { s.paragraphs.size == 1 }
   end
-end
-
-D "TopicDocument (resources)" do
-  S :load_input_1
-  r = @t.sections[1].resources
-  T { Resource === r[0] }
-  Eq r[0].topic_number, 16
-  Eq r[0].title,        "Coordinate geometry skills worksheet"
-  Eq r[0].level,        "5.23"
-  Eq r[0].category,     "F"
-  Eq r[0].filetype,     "PDF"
-  Eq r[0].file_re,      /^A030.+worksheet.pdf/
-  Eq r[0].description, %{
-    A summary of (nearly?) all the skills taught in this topic.
-    {-file:Solutions|PDF|A030*SOLUTIONS.pdf}
-  }.trim.tabto(0).chomp
 end
 
 xD "TopicDocument (html)" do
