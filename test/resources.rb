@@ -1,5 +1,5 @@
 
-D "TopicDocument (resource 1)" do
+D "Resource (resource 1)" do
   text = %{
     <Coordinate geometry skills worksheet> 5.23 F (pdf) file:^A030.+worksheet.pdf
       A summary of (nearly?) all the skills taught in this topic.
@@ -19,7 +19,7 @@ D "TopicDocument (resource 1)" do
   }.trim.tabto(0).chomp
 end
 
-D "TopicDocument (resource 2)" do
+D "Resource (resource 2)" do
   text = %{
     <y = mx + b interactive> 5.23 U (ggb) file:interactive.ggb
       Manipulate the values of _m_ and _b_ in this GeoGebra file, and see the effect
@@ -39,7 +39,7 @@ D "TopicDocument (resource 2)" do
   }.trim.tabto(0).chomp
 end
 
-D "TopicDocument (resource 3)" do
+D "Resource (resource 3)" do
   text = %{
     <Further equations of straight lines> 5.3 F,PS (pdf) file:^Further
       Textbook exercise with more challenging questions on finding the equations of
@@ -59,7 +59,7 @@ D "TopicDocument (resource 3)" do
   }.trim.tabto(0).chomp
 end
 
-D "TopicDocument (resource 4)" do
+D "Resource (resource 4)" do
   text = %{
     <Graphing straight line families> 5.123 U (gsp) file:^Graphing
       A GSP file encouraging you to think about the relationship between a linear
@@ -84,7 +84,7 @@ D "TopicDocument (resource 4)" do
   }.trim.tabto(0).chomp
 end
 
-D "TopicDocument (resource 5)" do
+D "Resource (resource 5)" do
   text = %{
     <Gradient product of perpendicular lines> 5.1 U,F,PS,R (gsp) file:^Gradient
       Explore the relationship between the gradients of two lines when they become
@@ -104,7 +104,7 @@ D "TopicDocument (resource 5)" do
   }.trim.tabto(0).chomp
 end
 
-D "TopicDocument (invalid resource 1)" do
+D "Resource (invalid resource 1)" do
   text = %{
     <King's Gambit Declined> 5.4 U (gsp) file:^Gradient
       This resource is erroneous because 5.4 is an invalid level.
@@ -112,7 +112,7 @@ D "TopicDocument (invalid resource 1)" do
   E { r = Resource.new(text, 7) }
 end
 
-D "TopicDocument (invalid resource 2)" do
+D "Resource (invalid resource 2)" do
   text = %{
     <King's Gambit Declined> 5.2 U,T (gsp) file:^Gradient
       This resource is erroneous because T is an invalid category.
@@ -120,3 +120,17 @@ D "TopicDocument (invalid resource 2)" do
   E { r = Resource.new(text, 7) }
 end
 
+D "Website (website 1)" do
+  text = %{
+    <Linear graph animation> 5.23 F
+      Take the challenge to determine an equation from its graph, and vice versa.
+  }.trim.tabto(0).chomp
+  w = Website.new(text)
+  T { Website === w }
+  Eq w.title,        "Linear graph animation"
+  Eq w.level,        "5.23"
+  Eq w.category,     "F"
+  Eq w.description, %{
+    Take the challenge to determine an equation from its graph, and vice versa.
+  }.trim.tabto(0).chomp
+end

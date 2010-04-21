@@ -8,6 +8,7 @@ require 'rubygems'
 require 'extensions/all'
 require 'dev-utils/debug'
 require 'ruby-debug'
+require 'redcloth'
 
 NL = "\n"
 
@@ -253,7 +254,7 @@ class Resource
       raise "Invalid format for resource details:\n  #{line}"
     end
     title, level, category, filetype, file_re = $1, $2, $3, $4, $5
-    validate(level, category)
+    Resource.validate(level, category)
     filetype = filetype.upcase
     file_re = Regexp.new(file_re)
     [title, level, category, filetype, file_re]
@@ -261,11 +262,9 @@ class Resource
 
   def extract_description(lines)
     lines[1..-1].join(NL).tabto(0) rescue ""
-    # Maybe do some processing of the lines here, or maybe that's someone else's
-    # responsibility.
   end
 
-  def validate(level, category)
+  def Resource.validate(level, category)
     unless level =~ /^5.(1|2|3|12|23|123)$/
       raise "Invalid value for 'level': #{level}"
     end
@@ -280,13 +279,35 @@ class Website
     # Process the paragraph into bits, taking account of the structure:
     #   <Linear graph animation> 5.23 F
     #     Take the challenge to determine an equation from its graph, and vice versa.
-    @title = nil
-    @_5123 = nil
-    @fupsr = nil
-    @description = nil
+    lines = paragraph.split(NL)
+    @title, @level, @category = extract_details(lines)
+    @description  = extract_description(lines)
   end
-end
+  attr_reader :title, :level, :category, :description
+  private
+  DETAILS_RE = %r{< ([^>]+) > \s+     # title
+                  (5.\d+) \s+         # level
+                  ([A-Z,]+) \s* $     # category
+                 }x
+  def extract_details(lines)
+    line = lines.first
+    unless line =~ DETAILS_RE
+      raise "Invalid format for website details:\n  #{line}"
+    end
+    title, level, category = $1, $2, $3
+    Resource.validate(level, category)
+    [title, level, category]
+  end
 
+  def extract_description(lines)
+    lines[1..-1].join(NL).tabto(0) rescue ""
+  end
+end  # class Website
+
+
+
+# = TextParser
+#
 # Takes paragraph text, looks for things like {red:...} or {-file:...}, or
 # bullet points, or...; splits it up, processes stuff, runs it through textile,
 # and produces HTML.
@@ -301,17 +322,17 @@ end
 #
 # Step 1 of processing would produce:
 #   ["*Latin* is a ",
-#    Filter[:red, "live"],
+#    [:red, "live"],
 #    "languate, with a weekly news radio program\neven being broadcase from ",
-#    Filter[:wp, "Switzerland"],
+#    [:wp, "Switzerland"],
 #    ".  See more in\n",
-#    Filter[:file, "this file", "A025*.pdf"],
+#    [:file, "this file", "A025*.pdf"],
 #    ".  *Some occupations* using Latin include:\n* vetinarian\n*botanist\n*Latin teacher"
 #   ]
 #
 # From there:
-#  * each Filter is called on to produce an HTML snippet (string), meaning we
-#    have an array of strings
+#  * each array like <tt>[:red, "live"] is passed through the appropriate filter
+#    to produce an HTML snippet (string), meaning we have an array of strings
 #      ["*Latin* is a ", "<span color="#FF0000">live</span>", "language, with...", ...]
 #
 #  * the array is joined to form one string
@@ -320,9 +341,6 @@ end
 #  * that string is processed by Textile to produce an HMTL paragraph
 #      "<b>Latin</b> is a <span color="#FF0000">live</span> language, with ..."
 #
-#  * if necessary, the paragraph is surrounded with <p> tags
-#      "<p>Latin</b> is a <span color="#FF0000">live</span> language, with...</p>"
-#
 # This order is important because Textile markers could surround a {} block;
 # e.g.
 #   I am *so {red:excited} I have to write in bold*!!!"
@@ -330,71 +348,81 @@ end
 # Also, note that the string contents of a Filter must be Textile-processed as
 # well; e.g.
 #   I went {red:down to the _river_ to pray}.
+#   NOTE: This is not done and probably won't be.
+#
+# Note: Only one paragraph at a time should be sent to TextParser.parse.
 #
 class TextParser
-  def initialize(string)  # or array of strings, perhaps
-    @string = string
-  end
+  private :initialize
 
-  def parse
-    array  = step1(@string)    # Split into String and Filter objects
+  def TextParser.parse(string)
+    array  = step1(string)     # Split into String and Array objects
     array  = step2(array)      # Turn Filter objects into HTML
-    string = array.join("\n")  # Now one big paragraph...
-    string = Redcloth.parse(string)   # ...of HTML
-    string = string.tag("<p>") # (if necessary)
+    string = array.join("")   # Now one big paragraph...
+    returning(RedCloth.new(string)) { |r|
+      r.hard_breaks = false
+      r.to_html
+    }
   end
 
-    # Return an array of alternating String and Filter objects.  See TextParser
-    # for an example.
-    # We use a regular expression to find the _next_ instance of {...}.  Then 
-  def xstep1(string)
-    string = string.dup
-    re = /\{.+?\}/m
-    filter_strings = string.scan(re)
-      # ->  [ "{red:live}", "{wp:Switzerland}", "{file:this file:A025.*.pdf}" ]
-    result = []
-    until string.empty? do
-      if match = string.match(re)
-        if match.pre_match
-          result << match.pre_match
-        end
-        result = match.to_s
-        string = match.post_match
-      else
-        result << string.slice!(0..-1)
-      end
-    end
-  end
-
-  def step1(string)
-    re = /\{.*?\}|[^{}]+/
+    # Find any {}-delimited strings and turn them into Filter objects.
+    # See TextParser documentation for an example.
+  def TextParser.step1(string)
+    re = / \{ .*? \}  |  [^{}]+ /mx
     string.scan(re).map { |str|
-      if str =~ /\{ (.*) \}/x
+      if str =~ /\{ (.*) \}/mx
         if $1.empty? then raise "Invalid text: {}" end
-        Filter.from_string($1)
+        arr = $1.split(':')     # -> ["red", "salbrious establishment"]
+        arr[0] = arr[0].intern
+        arr
       else
         str
       end
     }
   end
-end
 
+    # Turn Filter objects into HTML (run through textile) so that
+    # we return an array of strings.  Strings in the input array
+    # are passed through untouched.
+  def TextParser.step2(array)
+    array.map { |obj|
+      case obj
+      when String
+        obj
+      when Array
+        name = obj.first
+        args = obj.slice(1..-1)
+        if Filter[name].nil?
+          raise "No filter named '#{name}' has been defined"
+        end
+        Filter[name].apply(*args)
+      end
+    }
+  end
+end  # class TextParser
+
+
+  # Example usage:
+  #
+  #   Filter[:bold] { |str| "<b>" + str + "</b>" }
+  #
+  #   Filter[:bold].apply("some text")        # -> "<b>some text</b>"
+  #
 class Filter
-  def initialize(name, *args)
-    @name = name
-    @name = name.intern if String === name
-    @args = args
+  @@index = {}
+  def Filter.[](name)
+    @@index[name]
   end
-  attr_reader :name, :args
-  def ==(other)
-    self.name == other.name and self.args == other.args
+  def Filter.create(name, &block)
+    @@index[name] = Filter.new(name, block)
   end
-  def hash
-    [@name, @args].hash
+  def initialize(name, block)
+    @name, @block = name, block
   end
-  def Filter.from_string(str)
-    args = str.split(':')
-    Filter.new(args[0], *args[1..-1])
+  def apply(*args)
+    @block.call(*args)
   end
 end
 
+module Filters
+end
