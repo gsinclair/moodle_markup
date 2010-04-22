@@ -12,6 +12,14 @@ require 'redcloth'
 
 NL = "\n"
 
+class Options
+  COURSE_ID = 153
+  RESOURCE_TITLE_COLOUR = "#0000FF"
+  CATEGORY_COLOUR       = "#FF0000"
+  MAIN_HEADING_TAG      = :h2
+  SUB_HEADING_TAG       = :h4
+end
+
 def error(msg=nil)
   if msg
     raise StandardError, msg
@@ -35,7 +43,58 @@ class String
     open, close = "<#{t}>", "</#{t}>"
     open + self + close
   end
+  def untag(t)
+    if self =~ %r{ \A <#{t}> (.*) </#{t}> \Z }mx
+      $1
+    else
+      self
+    end
+  end
 end
+
+class Dirs
+  def Dirs.local() File.expand_path("~/My Documents/16. Enable/Web content") end
+  def Dirs.server() "../file.php/#{Options::COURSE_ID}" end
+
+  def Dirs.level_images() File.join( server, "images" ) end
+
+  # Returns local and server directory for the given topic number.  E.g.
+  #   Dirs.resource_directory(16)
+  #     # -> [ "~/My Documents/16. Enable/Web content/11-20/16",
+  #     #      "../file.php/153/11-20/16" ]
+  def Dirs.resource_directory(n)
+    group =
+      case n
+      when  1..10 then "1-10"
+      when 11..20 then "11-20"
+      when 21..30 then "21-30"
+      else
+        error "Invalid argument: #{n}"
+      end
+    _local  = File.join( local,  group, n.to_s )
+    _server = File.join( server, group, n.to_s )
+    [_local, _server]
+  end
+
+  # Returns a pathname for the file on the server in topic _n_ matching the
+  # _regex_.
+  def Dirs.server_file(n, regex)
+    _local, _server = resource_directory(n)
+    filenames = Dir.entries(_local).grep(regex)
+    filename =
+      case filenames.size
+      when 0
+        debug ( Dir.entries(_local) ).join(NL).indent(4)
+        error "No files match #{regex.inspect} in topic ##{n}"
+      when 1
+        filenames.first.gsub(' ', '_')
+      else
+        error "Too many files match #{regex.inspect} in topic ##{n}:\n" +
+          filenames.join("\n").indent(4)
+      end
+    File.join(_server, filename)
+  end
+end  # class Dirs
 
 # A collection of strings, with methods to support the extraction of
 # sections (headings and the paragraphs that follow).
@@ -158,21 +217,6 @@ class TopicDocument
   end
 end  # class TopicDocument
 
-class Section
-  def initialize(name, paragraphs)
-    @name, @paragraphs = name, paragraphs
-  end
-  attr_reader :name, :paragraphs
-  def html
-    out = String.new
-    out << NL << name.tag(:h4) << NL
-    @paragraphs.each do |p|
-      out << p.tag(:p) << NL
-    end
-    out
-  end
-end
-
 class Heading
   def initialize(name)
     raise ArgumentError unless name =~ /Topic (\w+)/
@@ -198,13 +242,43 @@ class Heading
   end
 end  # class Heading
 
+class Section
+  def initialize(name, paragraphs)
+    @name, @paragraphs = name, paragraphs
+  end
+  attr_reader :name, :paragraphs
+  def html
+    out = String.new
+    _html_heading(out)
+    _html_paragraphs(out)
+    out
+  end
+  protected
+  def _html_heading(out)
+    out << NL << @name.tag(Options::SUB_HEADING_TAG) << NL
+  end
+  def _html_paragraphs(out)
+    @paragraphs.each do |p|
+      out << NL << TextParser.parse(p) << NL
+    end
+  end
+end
+
 class SelfNamingSection < Section
   def initialize(paragraphs)
     super(self.class.name, paragraphs)
   end
 end
 
-class Description < SelfNamingSection; end
+class Description < SelfNamingSection
+    # Description doesn't print the heading "Description"; just the contents of
+    # the section.
+  def html
+    out = String.new
+    _html_paragraphs(out)
+    out
+  end
+end
 
 class Resources
   def initialize(paragraphs, n)
@@ -212,11 +286,12 @@ class Resources
   end
   attr_reader :resources
   def html
-    returning(StringIO.new) do |out|
-      @resources.each do |r|
-        out << NL << r.html
-      end
+    out = String.new
+    out << "Resources".tag(Options::SUB_HEADING_TAG) << NL
+    @resources.each do |r|
+      out << NL << r.html << NL
     end
+    out
   end
 end
 
@@ -238,14 +313,23 @@ class Resource
     #     {-file:Solutions|PDF|A030*SOLUTIONS.pdf}
     lines = paragraph.split(NL)
     @topic_number = topic_number
-    @title, @level, @category, @filetype , @file_re = extract_details(lines)
+    @title, @level, @category, @file_re = extract_details(lines)
     @description  = extract_description(lines)
+    @levels = @level.sub('5.','').split(//)   # [2, 3]
   end
-  attr_reader :topic_number, :title, :level, :category
-  attr_reader :filetype, :file_re, :description
+
+  attr_reader :topic_number, :title, :level, :category, :file_re
+  attr_reader :description
+
+  def html
+    out = String.new
+    out << [file_html, level_html, category_html].join(" ") << NL
+    out << description_html
+    out.tag('p')
+  end
+
   private
   DETAILS_RE = %r{< ([^>]+) > \s+ (5.\d+) \s+ ([A-Z,]+) \s+   # title, level, category
-                  \( ([A-z]+) \) \s+                          # filetype
                   file:(.+) \s* $                             # file_re
                  }x
   def extract_details(lines)
@@ -253,15 +337,35 @@ class Resource
     unless line =~ DETAILS_RE
       raise "Invalid format for resource details:\n  #{line}"
     end
-    title, level, category, filetype, file_re = $1, $2, $3, $4, $5
+    title, level, category, file_re = $1, $2, $3, $4
     Resource.validate(level, category)
-    filetype = filetype.upcase
     file_re = Regexp.new(file_re)
-    [title, level, category, filetype, file_re]
+    [title, level, category, file_re]
   end
 
   def extract_description(lines)
     lines[1..-1].join(NL).tabto(0) rescue ""
+  end
+
+  def file_html
+    text = @title.tag(:b)
+    Filters.file(text, @topic_number, @file_re)
+  end
+
+  def level_html
+    alt_text = @levels.map { |x| "5.#{x}" }.join(', ')
+    image_path = File.join( Dirs.level_images, "#{@levels.join}.png" )
+    %[<img width="60" vspace="0" hspace="0" height="10" border="0"] +
+    %[ title="#{alt_text}" alt="#{alt_text}" src="#{image_path}" />]
+  end
+
+  def category_html
+    colour = Options::CATEGORY_COLOUR
+    %[<span style="color: #{colour}"><b>(#{@category})</b></span>]
+  end
+
+  def description_html
+    TextParser.parse(@description).untag('p')
   end
 
   def Resource.validate(level, category)
@@ -358,9 +462,10 @@ class TextParser
   def TextParser.parse(string)
     array  = step1(string)     # Split into String and Array objects
     array  = step2(array)      # Turn Filter objects into HTML
-    string = array.join("")   # Now one big paragraph...
+    string = array.join("")    # Now one big paragraph...
     returning(RedCloth.new(string)) { |r|
       r.hard_breaks = false
+      r.no_span_caps = true
       r.to_html
     }
   end
@@ -370,11 +475,10 @@ class TextParser
   def TextParser.step1(string)
     re = / \{ .*? \}  |  [^{}]+ /mx
     string.scan(re).map { |str|
-      if str =~ /\{ (.*) \}/mx
-        if $1.empty? then raise "Invalid text: {}" end
-        arr = $1.split(':')     # -> ["red", "salbrious establishment"]
-        arr[0] = arr[0].intern
-        arr
+      if str =~ /\{ (.*?):(.*?) \}/mx
+        filter_name = $1.intern
+        filter_args = $2.split('|')
+        [filter_name, filter_args].flatten
       else
         str
       end
@@ -393,9 +497,11 @@ class TextParser
         name = obj.first
         args = obj.slice(1..-1)
         if Filter[name].nil?
-          raise "No filter named '#{name}' has been defined"
+          warn "No filter named '#{name}' has been defined"
+          Filter[:default].apply(name, *args)
+        else
+          Filter[name].apply(*args)
         end
-        Filter[name].apply(*args)
       end
     }
   end
@@ -424,5 +530,33 @@ class Filter
   end
 end
 
+Filter.create(:default) { |*args|
+  args_str = args.map { |x| x.inspect }.join(':')
+  %+*%{color: purple; border-bottom: 3px double}Filter[==#{args_str}==]%*+
+}
+Filter.create(:highlight) { |text| Filters.colour('#990066', text) }
+Filter.create(:warn)      { |text| Filters.bold(text) }
+Filter.create(:file)      { |text, topicn, regex| Filters.file(text, topicn, regex) }
+
 module Filters
+  class << self
+    def colour(col, text)
+      "%{color: #{col}}#{text}%"
+    end
+    def bold(text)
+      "*#{text}*"
+    end
+    # Create a link to a file in the given topic (matching +regex+).
+    # e.g.
+    #   file('Exercise 5.09', '13', '^Exer.+.pdf')
+    def file(text, topicn, regex)
+      topicn = topicn.to_i
+      regex = Regexp.compile(regex)
+      path = Dirs.server_file(topicn, regex)
+      title = File.extname(path).upcase.sub('.', '')
+      colour = Options::RESOURCE_TITLE_COLOUR
+      %[<a href="#{path}" target="_blank" title="#{title}" ] +
+      %[style="color: #{colour}">#{text}</a>]
+    end
+  end
 end

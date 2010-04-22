@@ -15,32 +15,28 @@ equations; parallel and perpendicular lines; general form; and more.
 
 [Resources]
 
-<Coordinate geometry skills worksheet> 5.23 F (pdf) file:^A030.+worksheet.pdf
+<Coordinate geometry skills worksheet> 5.23 F file:^A030.+worksheet.pdf
   A summary of (nearly?) all the skills taught in this topic.
-  {-file:Solutions|PDF|A030*SOLUTIONS.pdf}
+  {file:Solutions|16|A030.*SOLUTIONS.pdf}
 
-<y = mx + b interactive> 5.23 U (ggb) file:interactive.ggb
-  Manipulate the values of _m_ and _b_ in this GeoGebra file, and see the effect
-  they have on the graph.
-
-<Further equations of straight lines> 5.3 F,PS (pdf) file:^Further
+<Further equations of straight lines> 5.3 F,PS file:^Further.+lines.pdf
   Textbook exercise with more challenging questions on finding the equations of
   straight lines.
 
-<Graphing straight line families> 5.23 U (gsp) file:^Graphing
+<Graphing straight line families> 5.123 U file:^Graphing
   A GSP file encouraging you to think about the relationship between a linear
   equation and the corresponding graph. Essentially a teaching resource, but
   useful for independent study. {warn:Only works if you have Geometers Sketchpad
   installed.}
 
-<Gradient product of perpendicular lines> 5.23 U (gsp) file:^Gradient
+<Gradient product of perpendicular lines> 5.2 U file:^A019 Gradient.+.gsp$
   Explore the relationship between the gradients of two lines when they become
   perpendicular. {warn:Only works if you have Geometers Sketchpad installed.}
 
 
 [Websites]
 
-<Linear graph animation> 5.23 F
+<Linear graph animation> 5.1 F
   Take the challenge to determine an equation from its graph, and vice versa.
 
 

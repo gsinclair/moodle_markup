@@ -33,13 +33,39 @@ D "TopicDocument (surface)" do
     T { s.paragraphs[1] =~ /\ANote: there is .+ and more\.\Z/m }
     s = sections.shift
     T { Resources === s }
-    T { s.resources.size == 5 }
+    T { s.resources.size == 4 }
     s = sections.shift
     T { Websites === s }
     T { s.websites.size == 1 }
     s = sections.shift
     T { Note === s }
     T { s.paragraphs.size == 1 }
+  end
+end
+
+S :load_output_1 do
+  output_text = File.read("test/data/output1.html")
+  @output1    = Lines.new(output_text).paragraphs
+end
+
+Filter.create(:red) { |text| Filters.colour('#FF0000', text) }
+
+D "TopicDocument (deeper):" do
+  S :load_input_1
+  S :load_output_1
+  @sections = @t.sections.dup
+  D "correct heading HTML" do
+    Eq @t.heading.html, @output1.shift
+  end
+  D "correct description HTML" do
+    description = @sections.shift
+    T { Description === description }
+    Eq description.html.strip, @output1.shift(3).join("\n\n")
+  end
+  D "correct resources HTML" do
+    resources = @sections.shift
+    T { Resources === resources }
+    Eq resources.html.strip, @output1.shift(5).join("\n\n")
   end
 end
 

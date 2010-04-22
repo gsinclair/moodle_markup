@@ -24,7 +24,7 @@ D "TextParser" do
     @text = %{
       *Latin* is a {red:live} language, with a weekly news radio program
       even being broadcast from {wp:Switzerland}.  See more in
-      {file:this file:A025.*.pdf}.  *Some occupations* using Latin include:
+      {file:this file|A025.*.pdf}.  *Some occupations* using Latin include:
       * vetinarian
       * botanist
       * Latin teacher
@@ -102,6 +102,14 @@ even being broadcast from <a href="http://en.wikipedia.org/Switzerland">Switzerl
     T { Array === result.first }
     Eq result.shift, Array[:highlight, "party all night\nwith my friends"]
     Eq result.shift, ".\n"
+  end
+
+  D "Non-existent filter" do
+    text = "I've got {sqoo:blisters} on {quux:me fingers}!"
+    html = TextParser.parse(text)
+    expected = %{
+<p>I&#8217;ve got <strong><span style="color: purple; border-bottom: 3px double;">Filter:sqoo:"blisters"</span></strong> on <strong><span style="color: purple; border-bottom: 3px double;">Filter:quux:"me fingers"</span></strong>!</p>  }.strip
+    Eq html, expected
   end
 
 end  # D "TextParser"
