@@ -67,7 +67,7 @@ class Heading
     n = $1.to_i
     error "Invalid topic number #{n}" if n > 30
     @topic_number = n
-    @topic_name   = _topic_name(n)
+    @topic_name   = TOPIC_NAMES[n]
   end
   def Heading.from_section(section)
     raise ArgumentError unless section.paragraphs.empty?
@@ -76,13 +76,6 @@ class Heading
   attr_reader :topic_number, :topic_name
   def html
     "Topic #{@topic_number}: #{@topic_name}".tag(:h2)
-  end
-  private
-  def _topic_name(n)
-    @@topic_names ||=
-      File.readlines("topic-names.txt").
-      build_hash { |line| m = line.match(/^(\d+)\. (.+)$/); [ m[1].to_i, m[2].strip ] }
-    @@topic_names[n]
   end
 end  # class Heading
 
