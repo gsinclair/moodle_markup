@@ -18,6 +18,7 @@
 #   (4)  mm all --force
 #   (5)  mm clipboard
 #   (6)  mm --input file.txt
+#   (7)  mm status
 #
 # 1. Converts Topic16.txt to Topic16.html, but only if the input file is newer
 #    than the output file.
@@ -34,16 +35,19 @@
 #
 # 6. Convert file.txt into HTML; output to STDOUT.
 #
+# 7. Provides a status report on all Topicnn.txt files (how many resources,
+#    does it need updating).
+#
 # == Output
 #
 # When operating on one or more of the Topicnn files, the status of that file is
 # reported on STDOUT.  For example:
 #
 #   Topic01: forced
-#   Topic02: generated
-#   Topic03: generated
+#   Topic02: updated
+#   Topic03: updated
 #   Topic04: current
-#   Topic05: generated
+#   Topic05: updated
 #   Topic06: default       (see "Default files" below)
 #   Topic07: current
 #   ...
@@ -73,8 +77,8 @@
 #
 # will facilitate this, with output like this:
 #
-#   Topic  7 is on the clipboard (ENTER)
-#   Topic 12 is on the clipboard (ENTER)
+#   Topic07.html is on the clipboard (ENTER)
+#   Topic12.html is on the clipboard (ENTER)
 #
 # That is, you hit ENTER when you are ready for the next blob of HTML to be
 # placed on the clipboard.
@@ -93,6 +97,7 @@ class String; include Term::ANSIColor; end
 #   (4)  mm all --force
 #   (5)  mm clipboard
 #   (6)  mm --input file.txt
+#   (7)  mm status
 
 END { run }
 
@@ -111,6 +116,8 @@ def run
       InputApp.new(options)
     when "clipboard"
       ClipboardApp.new(options)
+    when "status"
+      StatusApp.new(options)
     end
   app.run
 end
@@ -144,6 +151,9 @@ def parse_options(args)
   if args.delete("clipboard")
     options.clipboard = true
     options.commands << "clipboard"
+  end
+  if args.delete("status")
+    options.commands << "status"
   end
   unless args.empty?
     begin
@@ -254,5 +264,24 @@ class ClipboardApp < App
   end
 end
 
+class StatusApp < App
+  def run
+    puts
+    puts "   TOPIC     # resources"
+    puts "  -------    -----------"
+    TOPICS.children.select { |file| file.extname == ".txt" }.each do |file|
+      topic = file.basename.to_s.sub('.txt', '')
+      nresources = file.readlines.grep(/^<.+?> .* file:/).size
+      str =
+        if nresources > 0
+          nresources.to_s.yellow.bold
+        else
+          nresources.to_s
+        end
+      puts "  #{topic}    #{str}"
+    end
+    puts
+  end
+end
 
 # vim: ft=ruby
