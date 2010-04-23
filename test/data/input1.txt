@@ -37,6 +37,7 @@ equations; parallel and perpendicular lines; general form; and more.
 [Websites]
 
 <Linear graph animation> 5.1 F
+  url:http://www.media.pearson.com.au/schools/cw/au_sch_mcseveny_nsm9_5153_1/int/lineargraph.html
   Take the challenge to determine an equation from its graph, and vice versa.
 
 

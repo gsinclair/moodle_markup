@@ -24,7 +24,7 @@ D "TextParser" do
     @text = %{
       *Latin* is a {red:live} language, with a weekly news radio program
       even being broadcast from {wp:Switzerland}.  See more in
-      {file:this file|A025.*.pdf}.  *Some occupations* using Latin include:
+      {filetest:this file|A025.*.pdf}.  *Some occupations* using Latin include:
       * vetinarian
       * botanist
       * Latin teacher
@@ -41,7 +41,7 @@ D "TextParser" do
       " language, with a weekly news radio program\neven being broadcast from "
     Eq result.shift, Array[:wp, "Switzerland"]
     Eq result.shift, ".  See more in\n"
-    Eq result.shift, Array[:file, "this file", "A025.*.pdf"]
+    Eq result.shift, Array[:filetest, "this file", "A025.*.pdf"]
     Eq result.shift,
       ".  *Some occupations* using Latin include:" +
       "\n* vetinarian\n* botanist\n* Latin teacher\n"
@@ -53,9 +53,9 @@ D "TextParser" do
   #
   Filter.create(:red)  { |text| %[<span style="color: #FF0000">#{text}</span>] }
   Filter.create(:red)  { |text| %[%{color: #FF0000}#{text}%] }
-  Filter.create(:file) { |text, file_re| Filters.file_filter(text, file_re) }
+  Filter.create(:filetest) { |text, file_re| Filters.filetest_filter(text, file_re) }
   Filter.create(:wp)   { |text| %+["#{text}":http://en.wikipedia.org/#{text}]+ }
-  def Filters.file_filter(text, file_re)
+  def Filters.filetest_filter(text, file_re)
     %+["#{text}":http://example.com]+
   end
 
@@ -106,10 +106,18 @@ even being broadcast from <a href="http://en.wikipedia.org/Switzerland">Switzerl
 
   D "Non-existent filter" do
     text = "I've got {sqoo:blisters} on {quux:me fingers}!"
-    html = TextParser.parse(text)
+    begin
+      x = StringIO.new
+      $stderr = x  # Next line will print warnings to $stderr; we want to capture them
+      html = TextParser.parse(text)
+    ensure
+      $stderr = STDERR
+    end
     expected = %{
 <p>I&#8217;ve got <strong><span style="color: purple; border-bottom: 3px double;">Filter:sqoo:"blisters"</span></strong> on <strong><span style="color: purple; border-bottom: 3px double;">Filter:quux:"me fingers"</span></strong>!</p>  }.strip
     Eq html, expected
+    Mt x.string, /No filter named 'sqoo' has been defined/
+    Mt x.string, /No filter named 'quux' has been defined/
   end
 
 end  # D "TextParser"

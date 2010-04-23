@@ -150,15 +150,23 @@ end
 
 D "Website (website 1)" do
   text = %{
-    <Linear graph animation> 5.23 F
+    <Linear graph animation> 5.1 F
+      url:http://www.media.pearson.com.au/schools/cw/au_sch_mcseveny_nsm9_5153_1/int/lineargraph.html
       Take the challenge to determine an equation from its graph, and vice versa.
   }.trim.tabto(0).chomp
   w = Website.new(text)
   T { Website === w }
   Eq w.title,        "Linear graph animation"
-  Eq w.level,        "5.23"
+  Eq w.level,        "5.1"
   Eq w.category,     "F"
+  Eq w.url, %{http://www.media.pearson.com.au/schools/cw/} \
+            + %{au_sch_mcseveny_nsm9_5153_1/int/lineargraph.html}
   Eq w.description, %{
     Take the challenge to determine an equation from its graph, and vice versa.
   }.trim.tabto(0).chomp
+  Eq w.html, %{
+<p><a href="http://www.media.pearson.com.au/schools/cw/au_sch_mcseveny_nsm9_5153_1/int/lineargraph.html" target="_blank" style="color: #0000FF"><b>Linear graph animation</b></a> <img width="60" vspace="0" hspace="0" height="10" border="0" title="5.1" alt="5.1" src="../file.php/153/images/1.png" /> <span style="color: #FF0000"><b>(F)</b></span>
+Take the challenge to determine an equation from its graph, and vice versa.</p>
+  }.strip
 end
+

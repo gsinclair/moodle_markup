@@ -67,11 +67,21 @@ D "TopicDocument (deeper):" do
     T { Resources === resources }
     Eq resources.html.strip, @output1.shift(5).join("\n\n")
   end
+  D "correct websites HTML" do
+    websites = @sections.shift
+    T { Websites === websites }
+    Eq websites.html.strip, @output1.shift(2).join("\n\n")
+  end
+  D "correct note HTML" do
+    note = @sections.shift
+    T { Note === note }
+    Eq note.html.strip, @output1.shift(2).join("\n\n")
+  end
 end
 
-xD "TopicDocument (html)" do
+D "TopicDocument (html) -- the big test from input file to output file" do
   input_text    = File.read("test/data/input1.txt") 
   expected_html = File.read("test/data/output1.html")
   t = TopicDocument.new(input_text)
-  Eq t.html, expected_html
+  Eq t.html.strip, expected_html.strip
 end

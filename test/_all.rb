@@ -3,7 +3,8 @@
 # Assume current directory is 'rgeom'.
 
 require 'rubygems'
-require 'dfect/auto'
+require 'dfect'
+include Dfect
 
 require 'extensions/string'
 require 'pp'
@@ -21,3 +22,4 @@ Dir['test/**/*.rb'].grep(filter).each do |file|
   load file
 end
 
+Dfect.run
