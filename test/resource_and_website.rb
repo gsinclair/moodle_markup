@@ -17,9 +17,9 @@ D "Resource (resource 1)" do
     {file:Solutions|16|A030.*SOLUTIONS.pdf}
   }.trim.tabto(0).chomp
   Eq r.html, %{
-<p><a href="../file.php/153/11-20/16/A030_Coordinate_geometry_skills_worksheet.pdf" target="_blank" title="PDF" style="color: #0000FF"><b>Coordinate geometry skills worksheet</b></a> <img width="60" vspace="0" hspace="0" height="10" border="0" title="5.2, 5.3" alt="5.2, 5.3" src="../file.php/153/images/23.png" /> <span style="color: #FF0000"><b>(F)</b></span>
+<p><a href="../../file.php/153/11-20/16/A030_Coordinate_geometry_skills_worksheet.pdf" target="_blank" title="PDF" style="color: #0000FF"><b>Coordinate geometry skills worksheet</b></a> <img width="60" vspace="0" hspace="0" height="10" border="0" title="5.2, 5.3" alt="5.2, 5.3" src="../../file.php/153/images/23.png" /> <span style="color: #FF0000"><b>(F)</b></span>
 A summary of (nearly?) all the skills taught in this topic.
-<a href="../file.php/153/11-20/16/A030_Coordinate_geometry_skills_worksheet_SOLUTIONS.pdf" target="_blank" title="PDF" style="color: #0000FF">Solutions</a></p>
+<a href="../../file.php/153/11-20/16/A030_Coordinate_geometry_skills_worksheet_SOLUTIONS.pdf" target="_blank" title="PDF" style="color: #0000FF">Solutions</a></p>
   }.strip
 end
 
@@ -62,7 +62,7 @@ D "Resource (resource 3)" do
     straight lines.
   }.trim.tabto(0).chomp
   Eq r.html, %{
-<p><a href="../file.php/153/11-20/16/Further_equations_of_straight_lines.pdf" target="_blank" title="PDF" style="color: #0000FF"><b>Further equations of straight lines</b></a> <img width="60" vspace="0" hspace="0" height="10" border="0" title="5.3" alt="5.3" src="../file.php/153/images/3.png" /> <span style="color: #FF0000"><b>(F,PS)</b></span>
+<p><a href="../../file.php/153/11-20/16/Further_equations_of_straight_lines.pdf" target="_blank" title="PDF" style="color: #0000FF"><b>Further equations of straight lines</b></a> <img width="60" vspace="0" hspace="0" height="10" border="0" title="5.3" alt="5.3" src="../../file.php/153/images/3.png" /> <span style="color: #FF0000"><b>(F,PS)</b></span>
 Textbook exercise with more challenging questions on finding the equations of
 straight lines.</p>
   }.strip
@@ -90,7 +90,7 @@ D "Resource (resource 4)" do
     installed.}
   }.trim.tabto(0).chomp
   Eq r.html, %{
-<p><a href="../file.php/153/11-20/16/Graphing_Straight_Line_Families.gsp" target="_blank" title="GSP" style="color: #0000FF"><b>Graphing straight line families</b></a> <img width="60" vspace="0" hspace="0" height="10" border="0" title="5.1, 5.2, 5.3" alt="5.1, 5.2, 5.3" src="../file.php/153/images/123.png" /> <span style="color: #FF0000"><b>(U)</b></span>
+<p><a href="../../file.php/153/11-20/16/Graphing_Straight_Line_Families.gsp" target="_blank" title="GSP" style="color: #0000FF"><b>Graphing straight line families</b></a> <img width="60" vspace="0" hspace="0" height="10" border="0" title="5.1, 5.2, 5.3" alt="5.1, 5.2, 5.3" src="../../file.php/153/images/123.png" /> <span style="color: #FF0000"><b>(U)</b></span>
 A GSP file encouraging you to think about the relationship between a linear
 equation and the corresponding graph. Essentially a teaching resource, but
 useful for independent study. <strong>Only works if you have Geometers Sketchpad
@@ -116,7 +116,7 @@ D "Resource (resource 5)" do
     perpendicular. {warn:Only works if you have Geometers Sketchpad installed.}
   }.trim.tabto(0).chomp
   Eq r.html, %{
-<p><a href="../file.php/153/11-20/16/A019_Gradient_product_of_perpendicular_lines.gsp" target="_blank" title="GSP" style="color: #0000FF"><b>Gradient product of perpendicular lines</b></a> <img width="60" vspace="0" hspace="0" height="10" border="0" title="5.1" alt="5.1" src="../file.php/153/images/1.png" /> <span style="color: #FF0000"><b>(U,F,PS,R)</b></span>
+<p><a href="../../file.php/153/11-20/16/A019_Gradient_product_of_perpendicular_lines.gsp" target="_blank" title="GSP" style="color: #0000FF"><b>Gradient product of perpendicular lines</b></a> <img width="60" vspace="0" hspace="0" height="10" border="0" title="5.1" alt="5.1" src="../../file.php/153/images/1.png" /> <span style="color: #FF0000"><b>(U,F,PS,R)</b></span>
 Explore the relationship between the gradients of two lines when they become
 perpendicular. <strong>Only works if you have Geometers Sketchpad installed.</strong></p>
   }.strip
@@ -165,7 +165,7 @@ D "Website (website 1)" do
     Take the challenge to determine an equation from its graph, and vice versa.
   }.trim.tabto(0).chomp
   Eq w.html, %{
-<p><a href="http://www.media.pearson.com.au/schools/cw/au_sch_mcseveny_nsm9_5153_1/int/lineargraph.html" target="_blank" style="color: #0000FF"><b>Linear graph animation</b></a> <img width="60" vspace="0" hspace="0" height="10" border="0" title="5.1" alt="5.1" src="../file.php/153/images/1.png" /> <span style="color: #FF0000"><b>(F)</b></span>
+<p><a href="http://www.media.pearson.com.au/schools/cw/au_sch_mcseveny_nsm9_5153_1/int/lineargraph.html" target="_blank" style="color: #0000FF"><b>Linear graph animation</b></a> <img width="60" vspace="0" hspace="0" height="10" border="0" title="5.1" alt="5.1" src="../../file.php/153/images/1.png" /> <span style="color: #FF0000"><b>(F)</b></span>
 Take the challenge to determine an equation from its graph, and vice versa.</p>
   }.strip
 end

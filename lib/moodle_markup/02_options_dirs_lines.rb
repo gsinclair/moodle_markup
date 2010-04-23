@@ -11,7 +11,7 @@ end
 
 class Dirs
   def Dirs.local() File.expand_path("~/My Documents/16. Enable/Web content") end
-  def Dirs.server() "../file.php/#{Options::COURSE_ID}" end
+  def Dirs.server() "../../file.php/#{Options::COURSE_ID}" end
 
   def Dirs.level_images() File.join( server, "images" ) end
 
