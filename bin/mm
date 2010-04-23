@@ -85,7 +85,6 @@
 #
 
 require 'moodle_markup'
-require 'ap'
 require 'ostruct'
 require 'term/ansicolor'
 class String; include Term::ANSIColor; end

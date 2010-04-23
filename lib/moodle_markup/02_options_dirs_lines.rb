@@ -41,7 +41,6 @@ class Dirs
     filename =
       case filenames.size
       when 0
-        debug ( Dir.entries(_local) ).join(NL).indent(4)
         error "No files match #{regex.inspect} in topic ##{n}"
       when 1
         filenames.first.gsub(' ', '_')

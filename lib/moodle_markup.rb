@@ -62,8 +62,6 @@
 
 require 'rubygems'
 require 'extensions/all'
-require 'dev-utils/debug'
-require 'ruby-debug'
 require 'redcloth'
 
 require 'moodle_markup/01_support'
