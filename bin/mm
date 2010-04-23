@@ -1,0 +1,258 @@
+#!/usr/bin/env ruby
+
+#
+# = mm -- moodle markup
+#
+# Basic action: read a text file that observes certain content, formatting and
+# layout rules (say Topic16.txt) and turn it into HTML (Topic16.html).
+#
+# mm knows the directory structure:
+#   {ENABLE}/Topics       [Where files like Topic16.txt and Topic16.html are found]
+#   {ENABLE}/Web content  [Mirror of the files on the Moodle server]
+#
+# == Examples
+#
+#   (1)  mm 16
+#   (2)  mm 16 --force
+#   (3)  mm all
+#   (4)  mm all --force
+#   (5)  mm clipboard
+#   (6)  mm --input file.txt
+#
+# 1. Converts Topic16.txt to Topic16.html, but only if the input file is newer
+#    than the output file.
+#
+# 2. As above, but performs the operation regardless of the files' ages.
+#
+# 3. Converts _all_ Topicnn.txt files to Topicnn.html (only recently updated files)
+#
+# 4. Converts _all_ Topicnn.txt files to Topicnn.html (all files)
+#
+# 5. For all HTML files that were 'recently' updated, put their contents on the
+#    clipboard one at a time.  This facilitates the pasting of the HTML into
+#    Moodle
+#
+# 6. Convert file.txt into HTML; output to STDOUT.
+#
+# == Output
+#
+# When operating on one or more of the Topicnn files, the status of that file is
+# reported on STDOUT.  For example:
+#
+#   Topic01: forced
+#   Topic02: generated
+#   Topic03: generated
+#   Topic04: current
+#   Topic05: generated
+#   Topic06: default       (see "Default files" below)
+#   Topic07: current
+#   ...
+#
+# generated:: The output file was out of date, so it was regenerated
+# current::   The output file was up to date, so it was left alone
+# forced::    The output file was up to date, but it was forcibly regenerated
+# default::   The input file was blank or non-existent, so a default one was created
+#
+# == Default files
+#
+# If you run <tt>mm 21</tt> and there is no file Topic21.txt, or if it's empty,
+# then it is created with default contents:
+#
+#   [Topic 21]
+#
+#   [Description]
+#
+#   No resources have been uploaded for this topic yet.
+#
+# == Clipboard
+#
+# If you run <tt>mm all</tt> and (say) topics 7, 12, 19 and 25 are regenerated,
+# then the next step is to put them on Moodle.  Running
+#
+#   mm clipboard
+#
+# will facilitate this, with output like this:
+#
+#   Topic  7 is on the clipboard (ENTER)
+#   Topic 12 is on the clipboard (ENTER)
+#
+# That is, you hit ENTER when you are ready for the next blob of HTML to be
+# placed on the clipboard.
+#
+
+require 'moodle_markup'
+require 'ap'
+require 'ostruct'
+require 'term/ansicolor'
+class String; include Term::ANSIColor; end
+
+
+#   (1)  mm 16
+#   (2)  mm 16 --force
+#   (3)  mm all
+#   (4)  mm all --force
+#   (5)  mm clipboard
+#   (6)  mm --input file.txt
+
+END { run }
+
+def app_error(msg)
+  $stderr.puts("mm: " + msg)
+  exit 1
+end
+
+def run
+  options = parse_options(ARGV)
+  app =
+    case options.command
+    when "all", "selected topics"
+      TopicsApp.new(options)
+    when "input"
+      InputApp.new(options)
+    when "clipboard"
+      ClipboardApp.new(options)
+    end
+  app.run
+end
+
+# parse_options()
+#
+# Returns OpenStruct containing some of these fields:
+#   command       { "all" | "selected topics" | "clipboard" | "input" }
+#   force         { true | nil }
+#   input_file    { "file.txt" ... }
+#   all           { true | nil }
+#   clipboard     { true | nil }
+#
+def parse_options(args)
+  options = OpenStruct.new
+  options.commands = []
+  parser = OptionParser.new { |p|
+    p.on("--force") { options.force = true }
+    p.on("--input FILE") { |file| options.input_file = file; options.commands << "input" }
+  }
+  begin
+    parser.parse!(args)
+  rescue OptionParser::ParseError => e
+    app_error e.message
+  end
+  if args.delete("all")
+    options.topics = (1..30)
+    options.all = true
+    options.commands << "all"
+  end
+  if args.delete("clipboard")
+    options.clipboard = true
+    options.commands << "clipboard"
+  end
+  unless args.empty?
+    begin
+      topics = args.map { |x| Integer(x) }
+    rescue ArgumentError => e
+      value = e.message.match(/invalid value for Integer: "(.*)"$/)[1]
+      app_error "Invalid argument: #{value}"
+    end
+    options.topics = topics
+    options.commands << "selected topics"
+  end
+  case options.commands.size
+  when 0
+    app_error "No command specified"
+  when 1
+    options.command = options.commands.first
+  else
+    app_error "Too many commands: #{options.commands.join(', ')}"
+  end
+  options
+end
+
+class App
+  BASE = Pathname.new( Dirs.local() ).parent    # hack
+  TOPICS = BASE + "Topics"
+
+    # command = :topics | :input | :clipboard
+  def initialize(options)
+    @options = options
+  end
+end  # class App
+
+class TopicsApp < App
+  def run
+    @options.topics.each do |n|
+      generate_topic(n)
+    end
+  end
+
+  def generate_topic(n)
+    str    = sprintf "%02d", n
+    input  = TOPICS + "Topic#{str}.txt"
+    output = TOPICS + "Topic#{str}.html"
+    status = nil
+    if not input.file? or input.size == 0
+      create_default_input_file(input, n)
+      status = "default".yellow.bold
+    end
+    if input.mtime > output.mtime
+      _generate_topic(input, output)
+      status ||= "updated".green.bold
+    elsif @options.force
+      _generate_topic(input, output)
+      status ||= "forced".red.bold
+    else
+      status ||= "current"
+    end
+    puts "  Topic#{str}: #{status}"
+  end
+
+  def create_default_input_file(path, n)
+    text = %{
+      [Topic #{n}]
+
+      [Description]
+
+      No resources have been uploaded for this topic yet.
+    }.trim.tabto(0)
+    File.write(path.to_s, text)
+  end
+
+  def _generate_topic(input, output)
+    text = input.read
+    html = TopicDocument.new(text).html
+    File.write( output.to_s, html )
+  end
+end
+
+class InputApp < App
+  def run
+    input = Pathname.new( @options.input_file )
+    app_error "File not found: #{input}" unless input.file?
+    text = input.read
+    html = TopicDocument.new(text).html
+    $stdout.puts html
+  end
+end
+
+class ClipboardApp < App
+  def run
+    data = TOPICS.children.map { |file|
+      if file.extname == ".html"
+        [file, file.mtime]
+      else
+        nil
+      end
+    }.compact
+      # -> [ [pathname,mtime], [pathname,mtime], [pathname,mtime], ...]
+    most_recent_time = data.max_by { |path, time| time }.at(1)
+    recent_files = data.select { |path, time| most_recent_time - time < 30 }.
+                        map    { |path, time| path }
+    recent_files.each do |file|
+      html = file.read
+      File.write('/dev/clipboard', html)
+      print "#{file.basename.to_s.yellow.bold} is in the clipboard (ENTER)"
+      gets
+    end
+  end
+end
+
+
+# vim: ft=ruby
