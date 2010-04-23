@@ -137,6 +137,7 @@ Filter.create(:default) { |*args|
 Filter.create(:highlight) { |text| Filters.colour('#990066', text) }
 Filter.create(:warn)      { |text| Filters.bold(text) }
 Filter.create(:file)      { |text, topicn, regex| Filters.file(text, topicn, regex) }
+Filter.create(:red)       { |text, topicn, regex| Filters.colour('#FF0000', text) }
 
 module Filters
   class << self
