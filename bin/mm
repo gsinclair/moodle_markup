@@ -86,17 +86,20 @@
 
 require 'moodle_markup'
 require 'ostruct'
+require 'pathname'
 require 'term/ansicolor'
 class String; include Term::ANSIColor; end
 
-
-#   (1)  mm 16
-#   (2)  mm 16 --force
-#   (3)  mm all
-#   (4)  mm all --force
-#   (5)  mm clipboard
-#   (6)  mm --input file.txt
-#   (7)  mm status
+BANNER = <<EOF
+Examples:
+ (1)  mm 16
+ (2)  mm 16 --force
+ (3)  mm all
+ (4)  mm all --force
+ (5)  mm clipboard
+ (6)  mm --input file.txt
+ (7)  mm status
+EOF
 
 END { run }
 
@@ -134,6 +137,7 @@ def parse_options(args)
   options = OpenStruct.new
   options.commands = []
   parser = OptionParser.new { |p|
+    p.banner = BANNER
     p.on("--force") { options.force = true }
     p.on("--input FILE") { |file| options.input_file = file; options.commands << "input" }
   }

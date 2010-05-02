@@ -37,6 +37,10 @@ class Dirs
     # _regex_.
   def Dirs.server_file(n, regex)
     _local, _server = resource_directory(n)
+    unless File.directory? _local
+      error "Local resources directory for topic #{n} doesn't exist.\n  " \
+            + _local.to_s
+    end
     filenames = Dir.entries(_local).grep(regex)
     filename =
       case filenames.size
